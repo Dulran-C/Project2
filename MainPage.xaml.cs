@@ -52,7 +52,7 @@ public partial class MainPage : ContentPage
             }
 
             _rawJson = json;
-            // keep JsonLabel for debugging but don't overwrite it with manifest names
+            // keep JsonLabel for debugging
             JsonLabel.Text = string.IsNullOrEmpty(_rawJson) ? "(no JSON loaded)" : _rawJson;
 
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -64,10 +64,13 @@ public partial class MainPage : ContentPage
             // Debug: show count in title so you can see whether any items were loaded
             this.Title = $"Movies ({_allMovies.Count})";
 
-            // Remove fallback sample item so UI only shows real data
-            // If no movies loaded, leave the list empty and let the UI show nothing
-
             MoviesView.ItemsSource = _allMovies;
+
+            // If no movies loaded, optionally show a debug alert
+            if (_allMovies.Count == 0)
+            {
+                await DisplayAlert("JSON Debug", "No movies loaded!", "OK");
+            }
         }
         catch (Exception ex)
         {
@@ -86,10 +89,35 @@ public partial class MainPage : ContentPage
         }
 
         var filtered = _allMovies
-            .Where(m => !string.IsNullOrEmpty(m.Title) &&
-                        m.Title.Contains(filter, StringComparison.OrdinalIgnoreCase))
+            .Where(m => (!string.IsNullOrEmpty(m.Title) && m.Title.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                        || (!string.IsNullOrEmpty(m.Director) && m.Director.Contains(filter, StringComparison.OrdinalIgnoreCase)))
             .ToList();
 
         MoviesView.ItemsSource = filtered;
+    }
+
+    private async void MoviesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection == null || e.CurrentSelection.Count == 0)
+            return;
+
+        if (e.CurrentSelection.FirstOrDefault() is Movie selectedMovie)
+        {
+            try
+            {
+                // Navigate to details page passing the selected Movie via constructor
+                var detailsPage = new MovieDetailsPage(selectedMovie);
+                await Navigation.PushAsync(detailsPage);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Navigation Error", ex.Message, "OK");
+            }
+            finally
+            {
+                // Clear selection to prevent duplicate navigation
+                MoviesView.SelectedItem = null;
+            }
+        }
     }
 }

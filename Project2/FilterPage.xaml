@@ -4,9 +4,7 @@
              Title="Filter">
 
     <VerticalStackLayout Padding="20" Spacing="15">
-
         <Label Text="Genre" FontAttributes="Bold"/>
-
         <Picker x:Name="GenrePicker">
             <Picker.Items>
                 <x:String>All</x:String>
@@ -18,16 +16,9 @@
         </Picker>
 
         <Label Text="Minimum Rating" FontAttributes="Bold"/>
-
-        <Slider x:Name="RatingSlider"
-                Minimum="0"
-                Maximum="10"
-                Value="0"/>
-
+        <Slider x:Name="RatingSlider" Minimum="0" Maximum="10" Value="0"/>
         <Label Text="{Binding Source={x:Reference RatingSlider}, Path=Value, StringFormat='Rating: {0:F1}'}"/>
 
-        <Button Text="Apply Filter"
-                Clicked="OnApplyFilterClicked"/>
-
+        <Button Text="Apply Filter" Clicked="OnApplyFilterClicked"/>
     </VerticalStackLayout>
 </ContentPage>

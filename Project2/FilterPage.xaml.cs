@@ -16,5 +16,7 @@ public partial class FilterPage : ContentPage
         await DisplayAlert("Filter Applied",
             $"Genre: {MovieFilter.SelectedGenre}\nMin Rating: {MovieFilter.MinimumRating:F1}",
             "OK");
+
+        await Navigation.PopAsync(); // back to MainPage
     }
 }

@@ -21,28 +21,22 @@ public partial class MainPage : ContentPage
         try
         {
             string json = string.Empty;
-
-            // 1) Try app package asset (preferred)
             try
             {
                 using var stream = await FileSystem.OpenAppPackageFileAsync("moviesemoji.json");
                 using var reader = new StreamReader(stream, System.Text.Encoding.UTF8);
                 json = await reader.ReadToEndAsync();
             }
-            catch
-            {
-                json = string.Empty;
-            }
+            catch { json = string.Empty; }
 
-            // 2) Fallback: try embedded resource
             if (string.IsNullOrEmpty(json))
             {
-                var fallbackAsm = Assembly.GetExecutingAssembly();
-                var resourceName = fallbackAsm.GetManifestResourceNames()
-                                      .FirstOrDefault(n => n.EndsWith("moviesemoji.json", StringComparison.OrdinalIgnoreCase));
+                var asm = Assembly.GetExecutingAssembly();
+                var resourceName = asm.GetManifestResourceNames()
+                                      .FirstOrDefault(n => n.EndsWith("moviesemoji.json", System.StringComparison.OrdinalIgnoreCase));
                 if (resourceName != null)
                 {
-                    using var stream = fallbackAsm.GetManifestResourceStream(resourceName);
+                    using var stream = asm.GetManifestResourceStream(resourceName);
                     if (stream != null)
                     {
                         using var reader = new StreamReader(stream, System.Text.Encoding.UTF8);
@@ -52,29 +46,23 @@ public partial class MainPage : ContentPage
             }
 
             _rawJson = json;
-            //JsonLabel.Text = string.IsNullOrEmpty(_rawJson) ? "(no JSON loaded)" : _rawJson;
-
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
             _allMovies = string.IsNullOrEmpty(json)
                 ? new List<Movie>()
                 : JsonSerializer.Deserialize<List<Movie>>(json, options) ?? new List<Movie>();
 
-            // Sanitize values: remove leading question marks or replacement characters
             foreach (var m in _allMovies)
             {
                 m.Emoji = StripLeadingQuestionMarks(m.Emoji);
                 m.Title = StripLeadingQuestionMarks(m.Title);
                 m.Director = StripLeadingQuestionMarks(m.Director);
-                if (m.Genre != null && m.Genre.Count > 0)
-                {
+                if (m.Genre != null)
                     for (int i = 0; i < m.Genre.Count; i++)
                         m.Genre[i] = StripLeadingQuestionMarks(m.Genre[i]);
-                }
             }
 
-            this.Title = $"Movies ({_allMovies.Count})";
             MoviesView.ItemsSource = _allMovies;
+            this.Title = $"Movies ({_allMovies.Count})";
         }
         catch (Exception ex)
         {
@@ -84,45 +72,64 @@ public partial class MainPage : ContentPage
 
     private static string StripLeadingQuestionMarks(string s)
     {
-        if (string.IsNullOrEmpty(s))
-            return string.Empty;
+        if (string.IsNullOrEmpty(s)) return string.Empty;
         return s.TrimStart('?', '\uFFFD').Trim();
     }
+
     private void ApplyFilters()
     {
-        var filtered = _allMovies.Where(m =>
-            (MovieFilter.SelectedGenre == "All" ||
-             m.Genre.Contains(MovieFilter.SelectedGenre)) &&
-            m.Rating >= MovieFilter.MinimumRating
-        ).ToList();
+        var filtered = _allMovies
+            .Where(m => (MovieFilter.SelectedGenre == "All" || m.Genre.Contains(MovieFilter.SelectedGenre)) &&
+                        m.Rating >= MovieFilter.MinimumRating)
+            .ToList();
+
+        string search = SearchBarControl.Text?.Trim() ?? "";
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            filtered = filtered.Where(m =>
+                (!string.IsNullOrEmpty(m.Title) && m.Title.Contains(search, System.StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(m.Director) && m.Director.Contains(search, System.StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+        }
+
+        if (ShowFavouritesSwitch.IsToggled)
+            filtered = filtered.Where(m => FavouritesServices.IsFavourite(m)).ToList();
 
         MoviesView.ItemsSource = filtered;
     }
-
 
     private void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
     {
         ApplyFilters();
-        string filter = e.NewTextValue?.Trim() ?? string.Empty;
+    }
 
-        if (string.IsNullOrWhiteSpace(filter))
+    private void ShowFavouritesSwitch_Toggled(object sender, ToggledEventArgs e)
+    {
+        ApplyFilters();
+    }
+
+    private void OnFavouriteClicked(object sender, EventArgs e)
+    {
+        var button = (Button)sender;
+        var movie = (Movie)button.BindingContext;
+
+        if (FavouritesServices.IsFavourite(movie))
         {
-            MoviesView.ItemsSource = _allMovies;
-            return;
+            FavouritesServices.RemoveFromFavourites(movie);
+            button.Text = "♡";
+        }
+        else
+        {
+            FavouritesServices.AddToFavourites(movie);
+            button.Text = "♥";
         }
 
-        var filtered = _allMovies
-            .Where(m => (!string.IsNullOrEmpty(m.Title) && m.Title.Contains(filter, StringComparison.OrdinalIgnoreCase))
-                        || (!string.IsNullOrEmpty(m.Director) && m.Director.Contains(filter, StringComparison.OrdinalIgnoreCase)))
-            .ToList();
-
-        MoviesView.ItemsSource = filtered;
-    } 
+        ApplyFilters();
+    }
 
     private async void MoviesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (e.CurrentSelection == null || e.CurrentSelection.Count == 0)
-            return;
+        if (e.CurrentSelection == null || e.CurrentSelection.Count == 0) return;
 
         if (e.CurrentSelection.FirstOrDefault() is Movie selectedMovie)
         {

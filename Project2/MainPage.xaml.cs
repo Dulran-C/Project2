@@ -88,9 +88,21 @@ public partial class MainPage : ContentPage
             return string.Empty;
         return s.TrimStart('?', '\uFFFD').Trim();
     }
+    private void ApplyFilters()
+    {
+        var filtered = _allMovies.Where(m =>
+            (MovieFilter.SelectedGenre == "All" ||
+             m.Genre.Contains(MovieFilter.SelectedGenre)) &&
+            m.Rating >= MovieFilter.MinimumRating
+        ).ToList();
+
+        MoviesView.ItemsSource = filtered;
+    }
+
 
     private void SearchBar_TextChanged(object sender, TextChangedEventArgs e)
     {
+        ApplyFilters();
         string filter = e.NewTextValue?.Trim() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(filter))
@@ -105,7 +117,7 @@ public partial class MainPage : ContentPage
             .ToList();
 
         MoviesView.ItemsSource = filtered;
-    }
+    } 
 
     private async void MoviesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

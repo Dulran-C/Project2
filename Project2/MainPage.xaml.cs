@@ -1,6 +1,5 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Storage;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,14 +39,9 @@ public partial class MainPage : ContentPage
             }) ?? new List<Movie>();
 
             foreach (var m in _allMovies)
-            {
                 m.Emoji = string.IsNullOrEmpty(m.Emoji) ? "🎬" : m.Emoji;
-            }
 
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                MoviesView.ItemsSource = _allMovies;
-            });
+            MoviesView.ItemsSource = _allMovies;
         }
         catch (Exception ex)
         {
@@ -63,10 +57,31 @@ public partial class MainPage : ContentPage
             using var reader = new StreamReader(stream);
             return await reader.ReadToEndAsync();
         }
-        catch
+        catch { }
+
+        var candidatePaths = new List<string>
+        {
+            Path.Combine(AppContext.BaseDirectory ?? "", filename),
+            Path.Combine(Environment.CurrentDirectory ?? "", filename),
+            Path.Combine(FileSystem.AppDataDirectory, filename),
+            Path.Combine(FileSystem.CacheDirectory, filename)
+        }.Distinct();
+
+        foreach (var p in candidatePaths)
+        {
+            try
+            {
+                if (File.Exists(p))
+                    return await File.ReadAllTextAsync(p);
+            }
+            catch { }
+        }
+
+        try
         {
             var asm = Assembly.GetExecutingAssembly();
-            var resName = asm.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith(filename));
+            var resName = asm.GetManifestResourceNames()
+                             .FirstOrDefault(n => n.EndsWith(filename, StringComparison.OrdinalIgnoreCase));
             if (resName != null)
             {
                 using var stream = asm.GetManifestResourceStream(resName);
@@ -74,6 +89,8 @@ public partial class MainPage : ContentPage
                 return await reader.ReadToEndAsync();
             }
         }
+        catch { }
+
         return string.Empty;
     }
 
@@ -98,49 +115,16 @@ public partial class MainPage : ContentPage
         if (ShowFavouritesSwitch.IsToggled)
             filtered = filtered.Where(FavouritesService.IsFavourite).ToList();
 
-        var displayList = filtered.Select(m => new Movie
-        {
-            Title = m.Title,
-            Director = m.Director,
-            Genre = m.Genre,
-            Rating = m.Rating,
-            Emoji = m.Emoji,
-            Description = m.Description,
-            IsViewed = ViewedMoviesService.GetViewed().Any(v => v.Title == m.Title)
-        }).ToList();
-
-        MoviesView.ItemsSource = displayList;
+        MoviesView.ItemsSource = filtered;
     }
 
     private void SearchBar_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
-    private void ShowFavouritesSwitch_Toggled(object sender, ToggledEventArgs e) => ApplyFilters();
 
     private async void OnOpenFilterClicked(object sender, EventArgs e)
     {
         var filterPage = new FilterPage();
         filterPage.OnFilterApplied = ApplyFilters;
         await Navigation.PushAsync(filterPage);
-    }
-
-    private void OnFavouriteClicked(object sender, EventArgs e)
-    {
-        var button = (Button)sender;
-        var movie = (Movie)button.BindingContext;
-
-        if (FavouritesService.IsFavourite(movie))
-            FavouritesService.RemoveFromFavourites(movie);
-        else
-            FavouritesService.AddToFavourites(movie);
-
-        button.Text = FavouritesService.IsFavourite(movie) ? "♥" : "♡";
-        ApplyFilters();
-    }
-
-    private void FavouriteButton_Loaded(object sender, EventArgs e)
-    {
-        var button = (Button)sender;
-        var movie = (Movie)button.BindingContext;
-        button.Text = FavouritesService.IsFavourite(movie) ? "♥" : "♡";
     }
 
     private async void MoviesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -150,6 +134,27 @@ public partial class MainPage : ContentPage
             ViewedMoviesService.AddViewed(movie);
             await Navigation.PushAsync(new MovieDetailsPage(movie));
             MoviesView.SelectedItem = null;
+        }
+    }
+
+    private void ShowFavouritesSwitch_Toggled(object sender, ToggledEventArgs e)
+    {
+        ApplyFilters();
+    }
+
+    private void OnFavouriteClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && btn.BindingContext is Movie movie)
+        {
+            if (FavouritesService.IsFavourite(movie))
+                FavouritesService.RemoveFromFavourites(movie);
+            else
+                FavouritesService.AddToFavourites(movie);
+
+            // Update button text to show filled heart
+            btn.Text = FavouritesService.IsFavourite(movie) ? "❤️" : "♡";
+
+            ApplyFilters();
         }
     }
 }

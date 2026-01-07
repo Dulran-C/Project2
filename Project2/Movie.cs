@@ -23,8 +23,6 @@ public class Movie
     [JsonPropertyName("emoji")]
     public string Emoji { get; set; }
 
-    [JsonPropertyName("description")]
-    public string Description { get; set; }
-
-    public bool IsViewed { get; set; } = false;
+    // UI-only (not from JSON)
+    public bool IsViewed { get; set; }
 }

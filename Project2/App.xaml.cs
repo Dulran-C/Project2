@@ -5,7 +5,7 @@
         public App()
         {
             InitializeComponent();
-            MainPage = new MainTabs();
+            MainPage = new NavigationPage(new MainTabs());
         }
     }
 

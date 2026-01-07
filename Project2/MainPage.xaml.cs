@@ -1,52 +1,62 @@
 ﻿using System.Reflection;
 using System.Text.Json;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.Controls;
 
 namespace Project2;
 
 public partial class MainPage : ContentPage
 {
-    List<Movie> _allMovies = new();
+    private List<Movie> _allMovies = new();
 
     public MainPage()
     {
         InitializeComponent();
-        LoadJson();
     }
 
-    private async void LoadJson()
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await LoadJsonAsync();
+        ApplyFilters(); // initial filter
+    }
+
+    // Load JSON asynchronously on a background thread
+    private async Task LoadJsonAsync()
     {
         try
         {
-            string json = string.Empty;
-            try
-            {
-                using var stream = await FileSystem.OpenAppPackageFileAsync("moviesemoji.json");
-                using var reader = new StreamReader(stream);
-                json = await reader.ReadToEndAsync();
-            }
-            catch { json = string.Empty; }
+            string json = await LoadJsonFileAsync("moviesemoji.json");
 
             if (string.IsNullOrEmpty(json))
+                return;
+
+            _allMovies = await Task.Run(() =>
             {
-                var asm = Assembly.GetExecutingAssembly();
-                var resName = asm.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith("moviesemoji.json"));
-                if (resName != null)
+                var movies = JsonSerializer.Deserialize<List<Movie>>(json, new JsonSerializerOptions
                 {
-                    using var stream = asm.GetManifestResourceStream(resName);
-                    using var reader = new StreamReader(stream);
-                    json = await reader.ReadToEndAsync();
+                    PropertyNameCaseInsensitive = true
+                }) ?? new List<Movie>();
+
+                // Clean up emojis and text
+                foreach (var m in movies)
+                {
+                    m.Emoji = StripLeadingQuestionMarks(m.Emoji);
+                    m.Title = StripLeadingQuestionMarks(m.Title);
+                    m.Director = StripLeadingQuestionMarks(m.Director);
+                    if (m.Genre != null)
+                        for (int i = 0; i < m.Genre.Count; i++)
+                            m.Genre[i] = StripLeadingQuestionMarks(m.Genre[i]);
                 }
-            }
 
-            _allMovies = string.IsNullOrEmpty(json)
-                ? new List<Movie>()
-                : JsonSerializer.Deserialize<List<Movie>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Movie>();
+                return movies;
+            });
 
-            MoviesView.ItemsSource = _allMovies;
-            this.Title = $"Movies ({_allMovies.Count})";
+            // Update UI on main thread
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                MoviesView.ItemsSource = _allMovies;
+                this.Title = $"Movies ({_allMovies.Count})";
+            });
         }
         catch (Exception ex)
         {
@@ -54,18 +64,51 @@ public partial class MainPage : ContentPage
         }
     }
 
+    // Helper method to read JSON safely
+    private async Task<string> LoadJsonFileAsync(string filename)
+    {
+        try
+        {
+            using var stream = await FileSystem.OpenAppPackageFileAsync(filename);
+            using var reader = new StreamReader(stream);
+            return await reader.ReadToEndAsync();
+        }
+        catch
+        {
+            var asm = Assembly.GetExecutingAssembly();
+            var resName = asm.GetManifestResourceNames()
+                             .FirstOrDefault(n => n.EndsWith(filename));
+            if (resName != null)
+            {
+                using var stream = asm.GetManifestResourceStream(resName);
+                using var reader = new StreamReader(stream);
+                return await reader.ReadToEndAsync();
+            }
+        }
+        return string.Empty;
+    }
+
+    private static string StripLeadingQuestionMarks(string s) =>
+        string.IsNullOrEmpty(s) ? string.Empty : s.TrimStart('?', '\uFFFD').Trim();
+
+    // Apply filters, search, and favourites toggle
     private void ApplyFilters()
     {
         var filtered = _allMovies
             .Where(m => (MovieFilter.SelectedGenre == "All" || m.Genre.Contains(MovieFilter.SelectedGenre)) &&
-                        (string.IsNullOrEmpty(MovieFilter.DirectorSearch) || m.Director.Contains(MovieFilter.DirectorSearch, StringComparison.OrdinalIgnoreCase)) &&
+                        (string.IsNullOrWhiteSpace(MovieFilter.DirectorSearch) ||
+                         m.Director.Contains(MovieFilter.DirectorSearch, StringComparison.OrdinalIgnoreCase)) &&
                         m.Rating >= MovieFilter.MinimumRating)
             .ToList();
 
         string search = SearchBarControl.Text?.Trim() ?? "";
         if (!string.IsNullOrWhiteSpace(search))
-            filtered = filtered.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                                           m.Director.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+        {
+            filtered = filtered
+                .Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                            m.Director.Contains(search, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
 
         if (ShowFavouritesSwitch.IsToggled)
             filtered = filtered.Where(FavouritesServices.IsFavourite).ToList();
@@ -73,10 +116,7 @@ public partial class MainPage : ContentPage
         MoviesView.ItemsSource = filtered;
     }
 
-
-    
-
-
+    // UI event handlers
     private void SearchBar_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
     private void ShowFavouritesSwitch_Toggled(object sender, ToggledEventArgs e) => ApplyFilters();
 
@@ -115,10 +155,12 @@ public partial class MainPage : ContentPage
         }
     }
 
-    protected override void OnAppearing()
+    private async void OnOpenFilterClicked(object sender, EventArgs e)
     {
-        base.OnAppearing();
-        ApplyFilters(); // apply filters whenever MainPage appears
+        var filterPage = new FilterPage();
+        filterPage.OnFilterApplied = ApplyFilters; // refresh MainPage after filter
+        await Navigation.PushAsync(filterPage);
     }
+
 
 }

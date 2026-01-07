@@ -17,15 +17,28 @@
         </Grid.RowDefinitions>
 
         <VerticalStackLayout Grid.Row="0" Spacing="10">
+
+            <!-- search bar -->
             <SearchBar x:Name="SearchBarControl"
                        Placeholder="Search movies..."
                        TextChanged="SearchBar_TextChanged"/>
+
+            <!-- filters button -->
+            <Button Text="Filters"
+                    Clicked="OnOpenFilterClicked"
+                    BackgroundColor="#6200EE"
+                    TextColor="White"
+                    CornerRadius="8"
+                    HeightRequest="40"/>
+
+            <!-- Favourites toggle -->
             <HorizontalStackLayout VerticalOptions="Center" Spacing="10">
                 <Switch x:Name="ShowFavouritesSwitch"
                         Toggled="ShowFavouritesSwitch_Toggled"/>
                 <Label Text="Show only favourites"
                        VerticalOptions="Center"/>
             </HorizontalStackLayout>
+
         </VerticalStackLayout>
 
         <CollectionView x:Name="MoviesView"

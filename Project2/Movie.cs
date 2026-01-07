@@ -26,6 +26,8 @@ public class Movie
     [JsonPropertyName("description")]
     public string Description { get; set; } // new!
 
+    public bool IsViewed { get; set; } = false;
+
     // Optional helper to display genre as a string
     [JsonIgnore]
     public string GenreString => Genre != null ? string.Join(", ", Genre) : "N/A";

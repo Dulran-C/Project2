@@ -98,8 +98,21 @@ public partial class MainPage : ContentPage
         if (ShowFavouritesSwitch.IsToggled)
             filtered = filtered.Where(FavouritesService.IsFavourite).ToList();
 
-        MoviesView.ItemsSource = filtered;
+        // Create a copy of movies with 'IsViewed' info
+        var displayList = filtered.Select(m => new Movie
+        {
+            Title = m.Title,
+            Director = m.Director,
+            Genre = m.Genre,
+            Rating = m.Rating,
+            Emoji = m.Emoji,
+            Description = m.Description,
+            IsViewed = ViewedMoviesService.GetViewed().Any(v => v.Title == m.Title)
+        }).ToList();
+
+        MoviesView.ItemsSource = displayList; // Only set ItemsSource once
     }
+
 
     // Event handlers wired from XAML
     private void SearchBar_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();

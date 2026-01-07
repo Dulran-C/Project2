@@ -8,15 +8,17 @@ public partial class FilterPage : ContentPage
         GenrePicker.SelectedIndex = 0;
     }
 
-    private async void OnApplyFilterClicked(object sender, EventArgs e)
+    private void OnApplyFilterClicked(object sender, EventArgs e)
     {
         MovieFilter.SelectedGenre = GenrePicker.SelectedItem?.ToString() ?? "All";
+        MovieFilter.SelectedDirector = DirectorEntry.Text?.Trim() ?? "All";
         MovieFilter.MinimumRating = RatingSlider.Value;
 
-        await DisplayAlert("Filter Applied",
-            $"Genre: {MovieFilter.SelectedGenre}\nMin Rating: {MovieFilter.MinimumRating:F1}",
-            "OK");
-
-        await Navigation.PopAsync(); // back to MainPage
+        // Optional: show alert to confirm
+        DisplayAlert("Filter Applied",
+                     $"Genre: {MovieFilter.SelectedGenre}\n" +
+                     $"Director: {MovieFilter.SelectedDirector}\n" +
+                     $"Min Rating: {MovieFilter.MinimumRating:F1}",
+                     "OK");
     }
 }

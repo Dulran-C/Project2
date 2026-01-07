@@ -22,9 +22,4 @@ public class Movie
 
     [JsonPropertyName("emoji")]
     public string Emoji { get; set; }
-
-    public bool IsFavorite { get; set; }
-
-    public string GenreText => string.Join(", ", Genre);
-
 }

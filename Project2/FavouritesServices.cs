@@ -1,23 +1,25 @@
-﻿namespace Project2;
+﻿using System.Collections.Generic;
+
+namespace Project2;
 
 public static class FavouritesServices
 {
-    public static List<string> FavouriteTitles { get; set; } = new();
+    public static List<Movie> Favourites { get; set; } = new();
 
     public static void AddToFavourites(Movie movie)
     {
-        if (!FavouriteTitles.Contains(movie.Title))
-            FavouriteTitles.Add(movie.Title);
+        if (!Favourites.Contains(movie))
+            Favourites.Add(movie);
     }
 
     public static void RemoveFromFavourites(Movie movie)
     {
-        if (FavouriteTitles.Contains(movie.Title))
-            FavouriteTitles.Remove(movie.Title);
+        if (Favourites.Contains(movie))
+            Favourites.Remove(movie);
     }
 
     public static bool IsFavourite(Movie movie)
     {
-        return FavouriteTitles.Contains(movie.Title);
+        return Favourites.Contains(movie);
     }
 }

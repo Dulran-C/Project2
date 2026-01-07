@@ -4,6 +4,7 @@
              Title="Filter">
 
     <VerticalStackLayout Padding="20" Spacing="15">
+
         <Label Text="Genre" FontAttributes="Bold"/>
         <Picker x:Name="GenrePicker">
             <Picker.Items>
@@ -14,6 +15,9 @@
                 <x:String>Comedy</x:String>
             </Picker.Items>
         </Picker>
+
+        <Label Text="Director" FontAttributes="Bold"/>
+        <Entry x:Name="DirectorEntry" Placeholder="Type director name"/>
 
         <Label Text="Minimum Rating" FontAttributes="Bold"/>
         <Slider x:Name="RatingSlider" Minimum="0" Maximum="10" Value="0"/>

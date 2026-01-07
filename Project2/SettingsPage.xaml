@@ -1,13 +1,29 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Project2.SettingsPage"
     Title="Settings">
 
-    <VerticalStackLayout Padding="20">
-        <Label Text="Settings will go here"
-               FontSize="18" />
-    </VerticalStackLayout>
+    <VerticalStackLayout Padding="20" Spacing="20">
 
+        <Label Text="Font Size" FontAttributes="Bold"/>
+
+        <Slider x:Name="FontSlider"
+                Minimum="12"
+                Maximum="24"
+                Value="16"
+                ValueChanged="FontSlider_ValueChanged"/>
+
+        <Label Text="Theme" FontAttributes="Bold"/>
+
+        <Picker x:Name="ThemePicker"
+                SelectedIndexChanged="ThemePicker_SelectedIndexChanged">
+            <Picker.Items>
+                <x:String>System</x:String>
+                <x:String>Light</x:String>
+                <x:String>Dark</x:String>
+            </Picker.Items>
+        </Picker>
+
+    </VerticalStackLayout>
 </ContentPage>

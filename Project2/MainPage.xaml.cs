@@ -98,7 +98,6 @@ public partial class MainPage : ContentPage
         if (ShowFavouritesSwitch.IsToggled)
             filtered = filtered.Where(FavouritesService.IsFavourite).ToList();
 
-        // Create a copy of movies with 'IsViewed' info
         var displayList = filtered.Select(m => new Movie
         {
             Title = m.Title,
@@ -110,11 +109,9 @@ public partial class MainPage : ContentPage
             IsViewed = ViewedMoviesService.GetViewed().Any(v => v.Title == m.Title)
         }).ToList();
 
-        MoviesView.ItemsSource = displayList; // Only set ItemsSource once
+        MoviesView.ItemsSource = displayList;
     }
 
-
-    // Event handlers wired from XAML
     private void SearchBar_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
     private void ShowFavouritesSwitch_Toggled(object sender, ToggledEventArgs e) => ApplyFilters();
 
@@ -151,10 +148,7 @@ public partial class MainPage : ContentPage
         if (e.CurrentSelection.FirstOrDefault() is Movie movie)
         {
             ViewedMoviesService.AddViewed(movie);
-
-            // Ensure MovieDetailsPage has a Back button
             await Navigation.PushAsync(new MovieDetailsPage(movie));
-
             MoviesView.SelectedItem = null;
         }
     }

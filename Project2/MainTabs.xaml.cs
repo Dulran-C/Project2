@@ -1,18 +1,11 @@
+using Microsoft.Maui.Controls;
+
 namespace Project2;
 
-public partial class MainTabs : TabbedPage
+public partial class MainTabs : Shell
 {
-	public MainTabs()
-	{
-		InitializeComponent();
-
-		Children.Clear();
-		Children.Add(new NavigationPage(new MainPage()) { Title = "Movies" });
-        Children.Add(new NavigationPage(new FilterPage()) { Title = "Filter" });
-        Children.Add(new NavigationPage(new SettingsPage()) { Title = "Settings" });
-
-
+    public MainTabs()
+    {
+        InitializeComponent();
     }
-
-
 }

@@ -1,41 +1,32 @@
 using Microsoft.Maui.Controls;
 using System;
 
-namespace Project2
+namespace Project2;
+
+public partial class FilterPage : ContentPage
 {
-    public partial class FilterPage : ContentPage
+    public Action OnFilterApplied;
+
+    public FilterPage()
     {
-        // Callback to refresh MainPage after applying filters
-        public Action OnFilterApplied;
+        InitializeComponent();
+        GenrePicker.SelectedIndex = 0;
+        RatingSlider.Value = MovieFilter.MinimumRating;
+        DirectorEntry.Text = MovieFilter.DirectorSearch;
 
-        public FilterPage()
+        RatingSlider.ValueChanged += (s, e) =>
         {
-            InitializeComponent();
+            RatingValueLabel.Text = $"Rating: {e.NewValue:F1}";
+        };
+    }
 
-            // Set defaults
-            GenrePicker.SelectedIndex = 0;
-            RatingSlider.Value = MovieFilter.MinimumRating;
-            DirectorEntry.Text = MovieFilter.DirectorSearch;
+    private void OnApplyFilterClicked(object sender, EventArgs e)
+    {
+        MovieFilter.SelectedGenre = GenrePicker.SelectedItem?.ToString() ?? "All";
+        MovieFilter.DirectorSearch = DirectorEntry.Text?.Trim() ?? "";
+        MovieFilter.MinimumRating = RatingSlider.Value;
 
-            // Update label dynamically
-            RatingSlider.ValueChanged += (s, e) =>
-            {
-                RatingValueLabel.Text = $"Rating: {e.NewValue:F1}";
-            };
-        }
-
-        private void OnApplyFilterClicked(object sender, EventArgs e)
-        {
-            // Update the filter static class
-            MovieFilter.SelectedGenre = GenrePicker.SelectedItem?.ToString() ?? "All";
-            MovieFilter.DirectorSearch = DirectorEntry.Text?.Trim() ?? "";
-            MovieFilter.MinimumRating = RatingSlider.Value;
-
-            // Call the callback to refresh MainPage
-            OnFilterApplied?.Invoke();
-
-            // Go back to MainPage
-            Navigation.PopAsync();
-        }
+        OnFilterApplied?.Invoke();
+        Navigation.PopAsync();
     }
 }

@@ -1,29 +1,17 @@
-<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Project2.SettingsPage"
-    Title="Settings">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Project2.SettingsPage"
+             Title="Settings">
 
     <VerticalStackLayout Padding="20" Spacing="20">
 
-        <Label Text="Font Size" FontAttributes="Bold"/>
+        <Label Text="Settings" FontSize="24" HorizontalOptions="Center"/>
 
-        <Slider x:Name="FontSlider"
-                Minimum="12"
-                Maximum="24"
-                Value="16"
-                ValueChanged="FontSlider_ValueChanged"/>
+        <HorizontalStackLayout Spacing="10">
+            <Label Text="Dark Mode" VerticalOptions="Center"/>
+            <Switch Toggled="OnDarkModeToggled"/>
+        </HorizontalStackLayout>
 
-        <Label Text="Theme" FontAttributes="Bold"/>
-
-        <Picker x:Name="ThemePicker"
-                SelectedIndexChanged="ThemePicker_SelectedIndexChanged">
-            <Picker.Items>
-                <x:String>System</x:String>
-                <x:String>Light</x:String>
-                <x:String>Dark</x:String>
-            </Picker.Items>
-        </Picker>
-
+        <Button Text="Logout" Clicked="OnLogoutClicked"/>
     </VerticalStackLayout>
 </ContentPage>

@@ -5,8 +5,6 @@
              Padding="20">
 
     <VerticalStackLayout Spacing="20">
-
-        <!-- Genre Picker -->
         <Label Text="Genre:" FontAttributes="Bold"/>
         <Picker x:Name="GenrePicker">
             <Picker.Items>
@@ -18,17 +16,13 @@
             </Picker.Items>
         </Picker>
 
-        <!-- Director Entry -->
         <Label Text="Director:" FontAttributes="Bold"/>
         <Entry x:Name="DirectorEntry" Placeholder="Enter director name"/>
 
-        <!-- Rating Slider -->
         <Label Text="Minimum Rating:" FontAttributes="Bold"/>
         <Slider x:Name="RatingSlider" Minimum="0" Maximum="10" Value="0"/>
         <Label x:Name="RatingValueLabel" Text="Rating: 0.0" FontAttributes="Italic" TextColor="Gray"/>
 
-        <!-- Apply Button -->
         <Button Text="Apply Filter" Clicked="OnApplyFilterClicked"/>
-
     </VerticalStackLayout>
 </ContentPage>

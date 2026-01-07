@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Microsoft.Maui.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching; // For MainThread
-using Microsoft.Maui.Storage;     // For FileSystem
-
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Storage;
+using System.IO;
+using System.Reflection;
 
 namespace Project2
 {
@@ -24,7 +24,7 @@ namespace Project2
         {
             base.OnAppearing();
             await LoadJsonAsync();
-            ApplyFilters(); // initial filter
+            ApplyFilters();
         }
 
         private async Task LoadJsonAsync()
@@ -32,34 +32,21 @@ namespace Project2
             try
             {
                 string json = await LoadJsonFileAsync("moviesemoji.json");
+                if (string.IsNullOrEmpty(json)) return;
 
-                if (string.IsNullOrEmpty(json))
-                    return;
-
-                _allMovies = await Task.Run(() =>
+                _allMovies = JsonSerializer.Deserialize<List<Movie>>(json, new JsonSerializerOptions
                 {
-                    var movies = JsonSerializer.Deserialize<List<Movie>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }) ?? new List<Movie>();
+                    PropertyNameCaseInsensitive = true
+                }) ?? new List<Movie>();
 
-                    foreach (var m in movies)
-                    {
-                        m.Emoji = StripLeadingQuestionMarks(m.Emoji);
-                        m.Title = StripLeadingQuestionMarks(m.Title);
-                        m.Director = StripLeadingQuestionMarks(m.Director);
-                        if (m.Genre != null)
-                            for (int i = 0; i < m.Genre.Count; i++)
-                                m.Genre[i] = StripLeadingQuestionMarks(m.Genre[i]);
-                    }
-
-                    return movies;
-                });
+                foreach (var m in _allMovies)
+                {
+                    m.Emoji = string.IsNullOrEmpty(m.Emoji) ? "🎬" : m.Emoji;
+                }
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     MoviesView.ItemsSource = _allMovies;
-                    this.Title = $"Movies ({_allMovies.Count})";
                 });
             }
             catch (Exception ex)
@@ -90,9 +77,6 @@ namespace Project2
             return string.Empty;
         }
 
-        private static string StripLeadingQuestionMarks(string s) =>
-            string.IsNullOrEmpty(s) ? string.Empty : s.TrimStart('?', '\uFFFD').Trim();
-
         private void ApplyFilters()
         {
             var filtered = _allMovies
@@ -112,29 +96,31 @@ namespace Project2
             }
 
             if (ShowFavouritesSwitch.IsToggled)
-                filtered = filtered.Where(FavouritesServices.IsFavourite).ToList();
+                filtered = filtered.Where(FavouritesService.IsFavourite).ToList();
 
             MoviesView.ItemsSource = filtered;
         }
 
+        // Event handlers wired from XAML
         private void SearchBar_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
         private void ShowFavouritesSwitch_Toggled(object sender, ToggledEventArgs e) => ApplyFilters();
+
+        private async void OnOpenFilterClicked(object sender, EventArgs e)
+        {
+            var filterPage = new FilterPage();
+            filterPage.OnFilterApplied = ApplyFilters;
+            await Navigation.PushAsync(filterPage);
+        }
 
         private void OnFavouriteClicked(object sender, EventArgs e)
         {
             var button = (Button)sender;
             var movie = (Movie)button.BindingContext;
 
-            if (FavouritesServices.IsFavourite(movie))
-            {
-                FavouritesServices.RemoveFromFavourites(movie);
-                button.Text = "♡";
-            }
+            if (FavouritesService.IsFavourite(movie))
+                FavouritesService.RemoveFromFavourites(movie);
             else
-            {
-                FavouritesServices.AddToFavourites(movie);
-                button.Text = "♥";
-            }
+                FavouritesService.AddToFavourites(movie);
 
             ApplyFilters();
         }
@@ -143,24 +129,17 @@ namespace Project2
         {
             var button = (Button)sender;
             var movie = (Movie)button.BindingContext;
-            button.Text = FavouritesServices.IsFavourite(movie) ? "♥" : "♡";
+            button.Text = FavouritesService.IsFavourite(movie) ? "♥" : "♡";
         }
 
         private async void MoviesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.CurrentSelection.FirstOrDefault() is Movie movie)
             {
-                ViewedMoviesService.AddViewed(movie); // Make sure this service exists
+                ViewedMoviesService.AddViewed(movie);
                 await Navigation.PushAsync(new MovieDetailsPage(movie));
                 MoviesView.SelectedItem = null;
             }
-        }
-
-        private async void OnOpenFilterClicked(object sender, EventArgs e)
-        {
-            var filterPage = new FilterPage();
-            filterPage.OnFilterApplied = ApplyFilters; // callback after filter
-            await Navigation.PushAsync(filterPage);
         }
     }
 }

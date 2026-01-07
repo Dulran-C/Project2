@@ -57,29 +57,24 @@ public partial class MainPage : ContentPage
     private void ApplyFilters()
     {
         var filtered = _allMovies
-            .Where(m =>
-                (MovieFilter.SelectedGenre == "All" || m.Genre.Contains(MovieFilter.SelectedGenre)) &&
-                (string.IsNullOrWhiteSpace(MovieFilter.SelectedDirector) ||
-                 MovieFilter.SelectedDirector.Equals("All", StringComparison.OrdinalIgnoreCase) ||
-                 m.Director.Contains(MovieFilter.SelectedDirector, StringComparison.OrdinalIgnoreCase)) &&
-                m.Rating >= MovieFilter.MinimumRating
-            )
+            .Where(m => (MovieFilter.SelectedGenre == "All" || m.Genre.Contains(MovieFilter.SelectedGenre)) &&
+                        (string.IsNullOrEmpty(MovieFilter.DirectorSearch) || m.Director.Contains(MovieFilter.DirectorSearch, StringComparison.OrdinalIgnoreCase)) &&
+                        m.Rating >= MovieFilter.MinimumRating)
             .ToList();
 
         string search = SearchBarControl.Text?.Trim() ?? "";
         if (!string.IsNullOrWhiteSpace(search))
-        {
-            filtered = filtered.Where(m =>
-                m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                m.Director.Contains(search, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
-        }
+            filtered = filtered.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                                           m.Director.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
 
         if (ShowFavouritesSwitch.IsToggled)
             filtered = filtered.Where(FavouritesServices.IsFavourite).ToList();
 
         MoviesView.ItemsSource = filtered;
     }
+
+
+    
 
 
     private void SearchBar_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
@@ -119,4 +114,11 @@ public partial class MainPage : ContentPage
             MoviesView.SelectedItem = null;
         }
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        ApplyFilters(); // apply filters whenever MainPage appears
+    }
+
 }

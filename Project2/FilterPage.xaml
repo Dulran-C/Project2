@@ -1,28 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Project2.FilterPage"
              Title="Filter">
 
-    <VerticalStackLayout Padding="20" Spacing="15">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+    <Label Text="Genre" FontAttributes="Bold"/>
+    <Picker x:Name="GenrePicker">
+        <Picker.Items>
+            <x:String>All</x:String>
+            <x:String>Action</x:String>
+            <x:String>Drama</x:String>
+            <x:String>Crime</x:String>
+            <x:String>Comedy</x:String>
+        </Picker.Items>
+    </Picker>
 
-        <Label Text="Genre" FontAttributes="Bold"/>
-        <Picker x:Name="GenrePicker">
-            <Picker.Items>
-                <x:String>All</x:String>
-                <x:String>Action</x:String>
-                <x:String>Drama</x:String>
-                <x:String>Crime</x:String>
-                <x:String>Comedy</x:String>
-            </Picker.Items>
-        </Picker>
+    <Label Text="Director" FontAttributes="Bold"/>
+    <Entry x:Name="DirectorEntry" Placeholder="Enter director name"/>
 
-        <Label Text="Director" FontAttributes="Bold"/>
-        <Entry x:Name="DirectorEntry" Placeholder="Type director name"/>
+    <Label Text="Minimum Rating" FontAttributes="Bold"/>
+    <Slider x:Name="RatingSlider" Minimum="0" Maximum="10" Value="0"/>
+    <Label Text="{Binding Source={x:Reference RatingSlider}, Path=Value, StringFormat='Rating: {0:F1}'}"/>
 
-        <Label Text="Minimum Rating" FontAttributes="Bold"/>
-        <Slider x:Name="RatingSlider" Minimum="0" Maximum="10" Value="0"/>
-        <Label Text="{Binding Source={x:Reference RatingSlider}, Path=Value, StringFormat='Rating: {0:F1}'}"/>
+    <Button Text="Apply Filter" Clicked="OnApplyFilterClicked"/>
+</VerticalStackLayout>
+    </ScrollView>
 
-        <Button Text="Apply Filter" Clicked="OnApplyFilterClicked"/>
-    </VerticalStackLayout>
 </ContentPage>

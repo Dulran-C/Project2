@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Project2.LoginPage"
+    Title="Login"
+    BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+    <VerticalStackLayout
+        Padding="30"
+        Spacing="20"
+        VerticalOptions="Center"
+        HorizontalOptions="Center">
+
+        <!-- App Title / Logo -->
+        <Label
+            Text="Movie Explorer"
+            FontSize="28"
+            FontAttributes="Bold"
+            HorizontalOptions="Center"
+            TextColor="{DynamicResource PrimaryTextColor}"/>
+
+        <!-- Username Entry -->
+        <Entry
+            x:Name="UsernameEntry"
+            Placeholder="Enter your username"
+            FontSize="18"
+            HorizontalOptions="FillAndExpand"
+            TextColor="{DynamicResource PrimaryTextColor}"
+            BackgroundColor="{DynamicResource EntryBackgroundColor}"
+            HeightRequest="50"
+            Margin="0,10,0,0"/>
+
+        <!-- Login Button -->
+        <Button
+            Text="Login"
+            FontSize="20"
+            HeightRequest="50"
+            CornerRadius="12"
+            BackgroundColor="{DynamicResource AccentColor}"
+            TextColor="White"
+            Clicked="OnLoginClicked"/>
+
+        <!-- Optional info / instructions -->
+        <Label
+            Text="Your favourites and viewed movies will be saved automatically."
+            FontSize="14"
+            HorizontalOptions="Center"
+            TextColor="{DynamicResource SecondaryTextColor}"
+            HorizontalTextAlignment="Center"
+            LineBreakMode="WordWrap"/>
+    </VerticalStackLayout>
+</ContentPage>

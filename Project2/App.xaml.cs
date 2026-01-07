@@ -1,16 +1,25 @@
-﻿namespace Project2
+﻿using Microsoft.Maui.Controls; // For Application, NavigationPage
+using Microsoft.Maui.Storage;  // For Preferences
+
+namespace Project2
 {
     public partial class App : Application
     {
         public App()
         {
             InitializeComponent();
-            MainPage = new NavigationPage(new MainTabs());
+
+            // Check if user is already logged in
+            string username = Preferences.Get("CurrentUser", null);
+
+            if (string.IsNullOrEmpty(username))
+            {
+                MainPage = new NavigationPage(new LoginPage());
+            }
+            else
+            {
+                MainPage = new NavigationPage(new MainPage());
+            }
         }
     }
-
-    //protected override Window CreateWindow(IActivationState? activationState)
-    //{
-    //   return new Window(new AppShell());
-    //}
 }

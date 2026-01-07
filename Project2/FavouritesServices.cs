@@ -1,62 +1,59 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using Microsoft.Maui.Storage;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.Maui.Storage;
 
 namespace Project2;
 
 public static class FavouritesService
 {
     private static List<Movie> _favourites = new();
-    private static string _currentUser;
-
-    public static void LoadFavourites(string username)
-    {
-        _currentUser = username;
-        _favourites.Clear();
-
-        string jsonPath = GetFilePath(username);
-        if (File.Exists(jsonPath))
-        {
-            string json = File.ReadAllText(jsonPath);
-            var movies = JsonSerializer.Deserialize<List<Movie>>(json);
-            if (movies != null)
-                _favourites = movies;
-        }
-    }
 
     public static void AddToFavourites(Movie movie)
     {
-        if (_favourites.Any(m => m.Title == movie.Title)) return;
-        _favourites.Add(movie);
-        Save();
+        if (!_favourites.Any(m => m.Title == movie.Title))
+            _favourites.Add(movie);
     }
 
     public static void RemoveFromFavourites(Movie movie)
     {
-        _favourites.RemoveAll(m => m.Title == movie.Title);
-        Save();
+        var existing = _favourites.FirstOrDefault(m => m.Title == movie.Title);
+        if (existing != null)
+            _favourites.Remove(existing);
     }
 
-    public static bool IsFavourite(Movie movie) => _favourites.Any(m => m.Title == movie.Title);
+    public static bool IsFavourite(Movie movie)
+    {
+        return _favourites.Any(m => m.Title == movie.Title);
+    }
+
+    public static List<Movie> GetFavourites() => _favourites;
 
     public static void Clear()
     {
         _favourites.Clear();
-        Save();
     }
 
-    private static void Save()
-    {
-        if (string.IsNullOrEmpty(_currentUser)) return;
+    // 🔹 USER MEMORY METHODS 🔹
 
-        string json = JsonSerializer.Serialize(_favourites, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(GetFilePath(_currentUser), json);
+    public static void LoadFavourites(string username)
+    {
+        string json = Preferences.Get($"{username}_Favourites", null);
+
+        if (!string.IsNullOrEmpty(json))
+        {
+            _favourites = JsonSerializer.Deserialize<List<Movie>>(json)
+                          ?? new List<Movie>();
+        }
+        else
+        {
+            _favourites = new List<Movie>();
+        }
     }
 
-    private static string GetFilePath(string username)
+    public static void SaveFavourites(string username)
     {
-        return Path.Combine(FileSystem.AppDataDirectory, $"{username}_favourites.json");
+        string json = JsonSerializer.Serialize(_favourites);
+        Preferences.Set($"{username}_Favourites", json);
     }
 }

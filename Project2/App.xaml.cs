@@ -13,21 +13,36 @@ public partial class App : Application
 
         if (string.IsNullOrEmpty(username))
         {
-            // Show login page first
             MainPage = new NavigationPage(new LoginPage());
         }
         else
         {
-            // Load user data
-            FavouritesService.LoadFavourites(username);
-            ViewedMoviesService.LoadHistory(username);
-
-            MainPage = new MainTabs(); // MainTabs handles its own navigation
+            LoadUserData(username);
+            MainPage = new MainTabs();
         }
+    }
+
+    private void LoadUserData(string username)
+    {
+        // Load favourites and viewed history
+        FavouritesService.LoadFavourites(username);
+        ViewedMoviesService.LoadHistory(username);
+
+        // Load dark mode
+        bool darkMode = Preferences.Get($"{username}_DarkMode", false);
+        Application.Current.UserAppTheme = darkMode ? AppTheme.Dark : AppTheme.Light;
     }
 
     public static void Logout()
     {
+        string username = Preferences.Get("CurrentUser", null);
+
+        if (!string.IsNullOrEmpty(username))
+        {
+            FavouritesService.SaveFavourites(username);
+            ViewedMoviesService.SaveHistory(username);
+        }
+
         Preferences.Remove("CurrentUser");
 
         FavouritesService.Clear();

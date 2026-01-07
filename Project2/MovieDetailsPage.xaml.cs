@@ -1,25 +1,32 @@
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
+using System;
 
 namespace Project2;
 
 public partial class MovieDetailsPage : ContentPage
 {
+    private readonly Movie _movie;
+
     public MovieDetailsPage(Movie movie)
     {
         InitializeComponent();
+        _movie = movie;
 
-        // Set the BindingContext so XAML bindings work
-        BindingContext = movie;
+        BindingContext = _movie;
 
-        // Add a back button to toolbar (optional)
-        ToolbarItems.Add(new ToolbarItem
+        MarkAsViewed();
+    }
+
+    private void MarkAsViewed()
+    {
+        string username = Preferences.Get("CurrentUser", null);
+        if (username == null) return;
+
+        if (!ViewedMoviesService.GetViewed().Exists(m => m.Title == _movie.Title))
         {
-            Text = "Back",
-            Command = new Command(async () =>
-            {
-                if (Navigation.NavigationStack.Count > 0)
-                    await Navigation.PopAsync();
-            })
-        });
+            ViewedMoviesService.AddViewed(_movie);
+            ViewedMoviesService.SaveHistory(username);
+        }
     }
 }

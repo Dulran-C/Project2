@@ -1,4 +1,6 @@
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
+using System;
 
 namespace Project2;
 
@@ -16,13 +18,12 @@ public partial class SettingsPage : ContentPage
 
     private void OnDarkModeToggled(object sender, ToggledEventArgs e)
     {
-        if (e.Value)
-            Application.Current.UserAppTheme = AppTheme.Dark;
-        else
-            Application.Current.UserAppTheme = AppTheme.Light;
+        string username = Preferences.Get("CurrentUser", null);
+        if (!string.IsNullOrEmpty(username))
+        {
+            Preferences.Set($"{username}_DarkMode", e.Value);
+        }
 
-        Preferences.Set("DarkMode", e.Value);
-
+        Application.Current.UserAppTheme = e.Value ? AppTheme.Dark : AppTheme.Light;
     }
-
 }

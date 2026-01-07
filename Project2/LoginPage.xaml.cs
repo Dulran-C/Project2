@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using System;
 
 namespace Project2;
 
@@ -21,10 +22,13 @@ public partial class LoginPage : ContentPage
 
         Preferences.Set("CurrentUser", username);
 
+        // Load user-specific memory
         FavouritesService.LoadFavourites(username);
         ViewedMoviesService.LoadHistory(username);
 
-        // Go to main tabs
+        bool darkMode = Preferences.Get($"{username}_DarkMode", false);
+        Application.Current.UserAppTheme = darkMode ? AppTheme.Dark : AppTheme.Light;
+
         Application.Current.MainPage = new MainTabs();
     }
 }

@@ -24,4 +24,7 @@ public class Movie
     public string Emoji { get; set; }
 
     public bool IsFavorite { get; set; }
+
+    public string GenreText => string.Join(", ", Genre);
+
 }

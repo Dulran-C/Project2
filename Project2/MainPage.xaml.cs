@@ -127,6 +127,15 @@ public partial class MainPage : ContentPage
         ApplyFilters();
     }
 
+    private void FavouriteButton_Loaded(object sender, EventArgs e)
+    {
+        var button = (Button)sender;
+        var movie = (Movie)button.BindingContext;
+
+        button.Text = FavouritesServices.IsFavourite(movie) ? "♥" : "♡";
+    }
+
+
     private async void MoviesView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (e.CurrentSelection == null || e.CurrentSelection.Count == 0) return;

@@ -1,25 +1,19 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Project2.MovieDetailsPage"
-    Title="Movie Details">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Project2.MovieDetailsPage"
+             Title="{Binding Title}"
+             Padding="20">
 
-    <VerticalStackLayout Padding="20" Spacing="12">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="10">
+            <Label Text="{Binding Emoji}" FontSize="60" HorizontalOptions="Center"/>
+            <Label Text="{Binding Title}" FontSize="24" FontAttributes="Bold"/>
+            <Label Text="{Binding Director}" FontSize="18"/>
+            <Label Text="{Binding GenreString}" FontSize="16" TextColor="Gray"/>
+            <Label Text="{Binding Rating, StringFormat='Rating: {0:F1}'}" FontSize="16"/>
+            <Label Text="Description:" FontAttributes="Bold" FontSize="18"/>
+            <Label Text="{Binding Description}" FontSize="16"/>
+        </VerticalStackLayout>
 
-        <Label x:Name="EmojiLabel"
-               HorizontalOptions="Center"
-               FontSize="64" />
-
-        <Label x:Name="TitleLabel"
-               FontAttributes="Bold"
-               FontSize="22"
-               HorizontalOptions="Center" />
-
-        <Label x:Name="YearLabel" FontSize="14" />
-        <Label x:Name="DirectorLabel" FontSize="14" />
-        <Label x:Name="GenreLabel" FontSize="14" />
-        <Label x:Name="RatingLabel" FontSize="14" />
-
-    </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

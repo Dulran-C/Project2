@@ -8,14 +8,18 @@ public partial class MovieDetailsPage : ContentPage
     {
         InitializeComponent();
 
-        if (movie == null)
-            return;
+        // Set the BindingContext so XAML bindings work
+        BindingContext = movie;
 
-        EmojiLabel.Text = movie.Emoji;
-        TitleLabel.Text = movie.Title;
-        YearLabel.Text = $"Year: {movie.Year}";
-        DirectorLabel.Text = $"Director: {movie.Director}";
-        GenreLabel.Text = $"Genre: {string.Join(", ", movie.Genre ?? new System.Collections.Generic.List<string>())}";
-        RatingLabel.Text = $"Rating: {movie.Rating}";
+        // Add a back button to toolbar (optional)
+        ToolbarItems.Add(new ToolbarItem
+        {
+            Text = "Back",
+            Command = new Command(async () =>
+            {
+                if (Navigation.NavigationStack.Count > 0)
+                    await Navigation.PopAsync();
+            })
+        });
     }
 }

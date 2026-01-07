@@ -4,11 +4,10 @@
        x:Class="Project2.MainTabs">
 
     <TabBar>
-        <ShellContent Title="Movies"
-                      Icon="movie_icon.png"
+        <ShellContent Title="Movies" Icon="movie_icon.png"
                       ContentTemplate="{DataTemplate local:MainPage}" />
-        <ShellContent Title="Settings"
-                      Icon="settings_icon.png"
+
+        <ShellContent Title="Settings" Icon="settings_icon.png"
                       ContentTemplate="{DataTemplate local:SettingsPage}" />
     </TabBar>
 </Shell>

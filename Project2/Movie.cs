@@ -22,4 +22,11 @@ public class Movie
 
     [JsonPropertyName("emoji")]
     public string Emoji { get; set; }
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } // new!
+
+    // Optional helper to display genre as a string
+    [JsonIgnore]
+    public string GenreString => Genre != null ? string.Join(", ", Genre) : "N/A";
 }

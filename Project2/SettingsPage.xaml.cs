@@ -16,6 +16,13 @@ public partial class SettingsPage : ContentPage
 
     private void OnDarkModeToggled(object sender, ToggledEventArgs e)
     {
-        // Optional: implement dark mode
+        if (e.Value)
+            Application.Current.UserAppTheme = AppTheme.Dark;
+        else
+            Application.Current.UserAppTheme = AppTheme.Light;
+
+        Preferences.Set("DarkMode", e.Value);
+
     }
+
 }

@@ -20,9 +20,11 @@ public partial class LoginPage : ContentPage
         }
 
         Preferences.Set("CurrentUser", username);
+
         FavouritesService.LoadFavourites(username);
         ViewedMoviesService.LoadHistory(username);
 
-        Application.Current.MainPage = new NavigationPage(new MainTabs());
+        // Go to main tabs
+        Application.Current.MainPage = new MainTabs();
     }
 }

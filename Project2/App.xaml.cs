@@ -10,23 +10,29 @@ public partial class App : Application
         InitializeComponent();
 
         string username = Preferences.Get("CurrentUser", null);
+
         if (string.IsNullOrEmpty(username))
         {
+            // Show login page first
             MainPage = new NavigationPage(new LoginPage());
         }
         else
         {
+            // Load user data
             FavouritesService.LoadFavourites(username);
             ViewedMoviesService.LoadHistory(username);
-            MainPage = new NavigationPage(new MainTabs());
+
+            MainPage = new MainTabs(); // MainTabs handles its own navigation
         }
     }
 
     public static void Logout()
     {
         Preferences.Remove("CurrentUser");
+
         FavouritesService.Clear();
         ViewedMoviesService.Clear();
+
         Application.Current.MainPage = new NavigationPage(new LoginPage());
     }
 }

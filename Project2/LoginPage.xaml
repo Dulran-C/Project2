@@ -5,14 +5,10 @@
              Padding="30">
 
     <VerticalStackLayout Spacing="20" VerticalOptions="CenterAndExpand">
-
         <Label Text="Welcome! Enter your username:" 
                FontSize="20" 
                HorizontalOptions="Center" />
-
-        <Entry x:Name="UsernameEntry" 
-               Placeholder="Username" />
-
+        <Entry x:Name="UsernameEntry" Placeholder="Username" />
         <Button Text="Login"
                 BackgroundColor="#4CAF50"
                 TextColor="White"
